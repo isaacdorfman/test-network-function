@@ -128,6 +128,8 @@ iterations may consider running `lshw` or similar types of diagnostic tests.
 The `generic` test spec tests:
 1) `Default` network connectivity between containers.
 2) That CNF container images are RHEL based.
+3) Print a warning if a pod spec specifies nodeSelector/nodeAffinity
+4) Print a warning if a pod's terminationGracePeriod is set to 30s(the default in Kubernetes)
 
 To test `Default` network connectivity, a [test partner pod](https://github.com/test-network-function/cnf-certification-test-partner)
 is installed on the network.  The test partner pod is used as a known point when testing network connectivity of test target pods,
