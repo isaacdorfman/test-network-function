@@ -17,11 +17,13 @@
 package testcases
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
+	"text/template"
 
 	"github.com/test-network-function/test-network-function/pkg/tnf/testcases/data/cnf"
 	"github.com/test-network-function/test-network-function/pkg/tnf/testcases/data/operator"
@@ -230,6 +232,14 @@ type ConfiguredTest struct {
 	Tests []string `yaml:"tests"`
 }
 
+type OperatorTestCaseGoTemplateData struct {
+	ExpectedStatus []string
+}
+
+type OperatorGoTemplateData struct {
+	SUBSCRIPTION_INSTALLED OperatorTestCaseGoTemplateData
+}
+
 // LoadConfiguredTestFile loads configured test cases to struct
 func LoadConfiguredTestFile(filepath string) (c *ConfiguredTestCase, err error) {
 	yamlFile, err := ioutil.ReadFile(filepath)
@@ -241,9 +251,9 @@ func LoadConfiguredTestFile(filepath string) (c *ConfiguredTestCase, err error) 
 }
 
 // RenderTestCaseSpec applies configured test case to template
-func (c *ConfiguredTest) RenderTestCaseSpec(testSpecType TestSpecType, testName string) (b *BaseTestCaseConfigSpec, err error) {
+func (c *ConfiguredTest) RenderTestCaseSpec(testSpecType TestSpecType, testName string, operatorGoTemplateData OperatorGoTemplateData) (b *BaseTestCaseConfigSpec, err error) {
 	if testSpecType == Operator {
-		b, err = LoadOperatorTestCaseSpecs(testName)
+		b, err = LoadOperatorTestCaseSpecs(testName, operatorGoTemplateData)
 	} else {
 		b, err = LoadCnfTestCaseSpecs(testName)
 	}
@@ -280,9 +290,34 @@ func LoadCnfTestCaseSpecs(name string) (*BaseTestCaseConfigSpec, error) {
 	return &testCaseConfigSpec, nil
 }
 
+func RenderTemplatedOperatorTest(templatedOperatorTest string, operatorGoTemplateData OperatorGoTemplateData) (renderedOperatorTest []byte, err error) {
+	template, err := template.New("goTemplate").Parse(OperatorTestTemplateDataMap[templatedOperatorTest])
+	if err != nil {
+		return []byte{}, err
+	}
+
+	renderedTemplate := bytes.NewBufferString("")
+	err = template.Execute(renderedTemplate, operatorGoTemplateData)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return renderedTemplate.Bytes(), nil
+}
+
+func UnmarshalRenderedOperatorTest(renderedTemplate []byte) (testCaseConfigSpec *BaseTestCaseConfigSpec, err error) {
+	err = json.Unmarshal(renderedTemplate, &testCaseConfigSpec)
+	return
+}
+
 // LoadOperatorTestCaseSpecs loads base test template data into a struct
-func LoadOperatorTestCaseSpecs(name string) (testCaseConfigSpec *BaseTestCaseConfigSpec, err error) {
-	err = json.Unmarshal([]byte(OperatorTestTemplateDataMap[name]), &testCaseConfigSpec)
+func LoadOperatorTestCaseSpecs(name string, operatorGoTemplateData OperatorGoTemplateData) (testCaseConfigSpec *BaseTestCaseConfigSpec, err error) {
+	parsedTemplate, err := RenderTemplatedOperatorTest(OperatorTestTemplateDataMap[name], operatorGoTemplateData)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(parsedTemplate, &testCaseConfigSpec)
 	return
 }
 

@@ -35,9 +35,7 @@ var OperatorJSON = string(`{
       "command": "oc get subscription %s -n %s -ojson | jq -r '.spec.name'",
       "action": "allow",
       "resulttype": "string",
-      "expectedstatus": [
-        "etcd"
-      ]
+      "expectedstatus": {{ if .SUBSCRIPTION_INSTALLED.ExpectedStatus }} {{ .SUBSCRIPTION_INSTALLED.ExpectedStatus }} {{ else }} [] {{end}}
     },
     {
       "name": "CSV_SCC",

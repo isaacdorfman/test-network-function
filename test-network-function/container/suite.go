@@ -131,7 +131,7 @@ var _ = ginkgo.Describe(testSpecName, func() {
 					gomega.Expect(testFile).ToNot(gomega.BeNil())
 					gomega.Expect(err).To(gomega.BeNil())
 					testConfigure := testcases.ContainsConfiguredTest(testFile.CnfTest, testType)
-					renderedTestCase, err := testConfigure.RenderTestCaseSpec(testcases.Cnf, testType)
+					renderedTestCase, err := testConfigure.RenderTestCaseSpec(testcases.Cnf, testType, testcases.OperatorGoTemplateData{})
 					gomega.Expect(err).To(gomega.BeNil())
 					gomega.Expect(renderedTestCase).ToNot(gomega.BeNil())
 					for _, testCase := range renderedTestCase.TestCase {

@@ -55,6 +55,12 @@ var (
 	err            error
 )
 
+var operatorGoTemplateData = testcases.OperatorGoTemplateData{
+	SUBSCRIPTION_INSTALLED: testcases.OperatorTestCaseGoTemplateData{
+		ExpectedStatus: []string{"etcd"},
+	},
+}
+
 var _ = ginkgo.Describe(testSpecName, func() {
 	if testcases.IsInFocus(ginkgoconfig.GinkgoConfig.FocusStrings, testSpecName) {
 		defer ginkgo.GinkgoRecover()
@@ -104,7 +110,7 @@ func itRunsTestsOnOperator() {
 			gomega.Expect(testFile).ToNot(gomega.BeNil())
 			gomega.Expect(err).To(gomega.BeNil())
 			testConfigure := testcases.ContainsConfiguredTest(testFile.OperatorTest, testType)
-			renderedTestCase, err := testConfigure.RenderTestCaseSpec(testcases.Operator, testType)
+			renderedTestCase, err := testConfigure.RenderTestCaseSpec(testcases.Operator, testType, operatorGoTemplateData)
 			gomega.Expect(err).To(gomega.BeNil())
 			gomega.Expect(renderedTestCase).ToNot(gomega.BeNil())
 			for _, testCase := range renderedTestCase.TestCase {

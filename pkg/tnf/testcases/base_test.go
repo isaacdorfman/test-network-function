@@ -47,6 +47,12 @@ const (
 	allowAll         = `.+`
 )
 
+var operatorGoTemplateData = testcases.OperatorGoTemplateData{
+	SUBSCRIPTION_INSTALLED: testcases.OperatorTestCaseGoTemplateData{
+		ExpectedStatus: []string{"etcd"},
+	},
+}
+
 func setup() {
 	configuredTest := testcases.ConfiguredTest{}
 	configuredTest.Name = "PRIVILEGED_POD"
@@ -95,7 +101,7 @@ func TestLoadCNFPodGatherFactsTestCaseSpecs(t *testing.T) {
 }
 
 func TestLoadOperatorOperatorStatusTestCaseSpecs(t *testing.T) {
-	testCase, err := testcases.LoadOperatorTestCaseSpecs(testcases.OperatorStatus)
+	testCase, err := testcases.LoadOperatorTestCaseSpecs(testcases.OperatorStatus, operatorGoTemplateData)
 	assert.Nil(t, err)
 	assert.NotNil(t, testCase)
 }
@@ -136,7 +142,7 @@ func TestConfiguredTest_Operator_RenderTestCaseSpec(t *testing.T) {
 	var c = testcases.ConfiguredTest{}
 	c.Name = "OPERATOR_STATUS"
 	c.Tests = []string{"CSV_INSTALLED", "SUBSCRIPTION_INSTALLED", "CSV_SCC"}
-	b, err := c.RenderTestCaseSpec(testcases.Operator, testcases.OperatorStatus)
+	b, err := c.RenderTestCaseSpec(testcases.Operator, testcases.OperatorStatus, operatorGoTemplateData)
 	assert.Nil(t, err)
 	assert.NotNil(t, b)
 	assert.Equal(t, "CSV_INSTALLED", b.TestCase[0].Name)
@@ -145,12 +151,12 @@ func TestConfiguredTest_Operator_RenderTestCaseSpec(t *testing.T) {
 
 	c.Name = "PRIVILEGED_POD"
 	c.Tests = []string{"HOST_NETWORK_CHECK"}
-	b, err = c.RenderTestCaseSpec(testcases.Cnf, testcases.PrivilegedPod)
+	b, err = c.RenderTestCaseSpec(testcases.Cnf, testcases.PrivilegedPod, operatorGoTemplateData)
 	assert.Nil(t, err)
 	assert.NotNil(t, b)
 	assert.Equal(t, "HOST_NETWORK_CHECK", b.TestCase[0].Name)
 
-	b, err = c.RenderTestCaseSpec(testcases.Cnf, InValidKey)
+	b, err = c.RenderTestCaseSpec(testcases.Cnf, InValidKey, operatorGoTemplateData)
 	assert.NotNil(t, err)
 	assert.Nil(t, b)
 }
@@ -159,7 +165,7 @@ func TestConfiguredTest_CNF_RenderTestCaseSpec(t *testing.T) {
 	var c = testcases.ConfiguredTest{}
 	c.Name = "PRIVILEGED_POD"
 	c.Tests = []string{"HOST_NETWORK_CHECK"}
-	b, err := c.RenderTestCaseSpec(testcases.Cnf, testcases.PrivilegedPod)
+	b, err := c.RenderTestCaseSpec(testcases.Cnf, testcases.PrivilegedPod, operatorGoTemplateData)
 	assert.Nil(t, err)
 	assert.NotNil(t, b)
 	assert.Equal(t, "HOST_NETWORK_CHECK", b.TestCase[0].Name)
